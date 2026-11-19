@@ -1,10 +1,5 @@
-scene,method,mean score,rating,time in C or worse [%]
-scene-0061 (Singapore One-North),V1 (2022),77.49,B,44.9
-scene-0061 (Singapore One-North),V1 + axis fix,77.53,B,44.9
-scene-0061 (Singapore One-North),v2 default (axis fix + jerk),71.29,C,64.2
-scene-0103 (Boston Seaport),V1 (2022),78.04,B,49.8
-scene-0103 (Boston Seaport),V1 + axis fix,76.2,B,49.7
-scene-0103 (Boston Seaport),v2 default (axis fix + jerk),68.49,C,68.0
-scene-0916 (Singapore Queenstown),V1 (2022),72.45,C,67.9
-scene-0916 (Singapore Queenstown),V1 + axis fix,74.66,C,67.8
-scene-0916 (Singapore Queenstown),v2 default (axis fix + jerk),65.38,C,88.2
+scene,mean score,rating,time in C or worse [%]
+scene-0061 (Singapore One-North),71.29,C,64.2
+scene-0103 (Boston Seaport),68.49,C,68.0
+scene-0446,65.03,C,72.4
+scene-0916 (Singapore Queenstown),65.38,C,88.2

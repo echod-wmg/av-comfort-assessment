@@ -12,6 +12,12 @@ from matplotlib.lines import Line2D
 from .model import ComfortModel, default_model
 
 
+def _level_colours(result: pd.DataFrame, model: ComfortModel) -> list:
+    """Colour of each sample's comfort level."""
+    palette = np.array([lv.colour for lv in model.levels], dtype=object)
+    return list(palette[result["level"].to_numpy()])
+
+
 def gg_diagram(result: pd.DataFrame, model: Optional[ComfortModel] = None, ax=None, title: Optional[str] = None):
     """Lateral vs longitudinal acceleration with the comfort regions."""
     model = model or default_model()
@@ -22,7 +28,8 @@ def gg_diagram(result: pd.DataFrame, model: Optional[ComfortModel] = None, ax=No
             continue
         x, y = lv.accel.vertices()
         ax.plot(x, y, color=lv.colour, linewidth=1.8, label=f"{lv.rating}  {lv.name}")
-    ax.scatter(result["acc_lat_f"], result["acc_long_f"], s=4, c="k", alpha=0.5, linewidths=0)
+    colours = _level_colours(result, model)
+    ax.scatter(result["acc_lat_f"], result["acc_long_f"], s=6, c=colours, alpha=0.7, linewidths=0, zorder=3)
     ax.set_xlabel("Lateral acceleration [m/s²]")
     ax.set_ylabel("Longitudinal acceleration [m/s²]")
     ax.set_title(title or "Lateral / longitudinal acceleration classification")
@@ -49,7 +56,13 @@ def score_timeline(result: pd.DataFrame, model: Optional[ComfortModel] = None, a
         if hi > y_min:  # label only the visible part of the band
             mid = (max(lo, y_min) + hi) / 2
             ax.text(1.005, mid, rating, transform=ax.get_yaxis_transform(), va="center", fontsize=8)
-    ax.plot(result["time_s"], result["score"], color="mediumblue", lw=1)
+    t = result["time_s"].to_numpy()
+    dt = float(np.median(np.diff(t))) if t.size > 1 else 1.0
+    win = max(1, int(round(1.0 / dt))) if dt > 0 else 1
+    smooth = result["score"].rolling(win, center=True, min_periods=1).mean()
+    ax.plot(t, result["score"], color="mediumblue", lw=0.6, alpha=0.3, label="per sample")
+    ax.plot(t, smooth, color="mediumblue", lw=2, label="1 s average")
+    ax.legend(loc="lower left", fontsize=8)
     ax.set_ylim(y_min, 100)
     ax.set_xlabel("Time [s]")
     ax.set_ylabel("Comfort score [0-100]")
@@ -93,8 +106,11 @@ def route_map(
         raise ValueError("no position columns (lon/lat or x_m/y_m) in the data")
     if ax is None:
         _, ax = plt.subplots(figsize=(7, 7))
-    colours = np.array([lv.colour for lv in model.levels], dtype=object)[result["level"].to_numpy()]
-    ax.scatter(xs, ys, c=list(colours), s=9, linewidths=0, zorder=3)
+    ax.scatter(xs, ys, c=_level_colours(result, model), s=16, linewidths=0, zorder=3)
+    ax.plot(xs.iloc[0], ys.iloc[0], marker="o", ms=9, mfc="white", mec="k", zorder=4)
+    ax.plot(xs.iloc[-1], ys.iloc[-1], marker="s", ms=8, mfc="white", mec="k", zorder=4)
+    ax.annotate("start", (xs.iloc[0], ys.iloc[0]), textcoords="offset points", xytext=(8, 6), fontsize=8)
+    ax.annotate("end", (xs.iloc[-1], ys.iloc[-1]), textcoords="offset points", xytext=(8, 6), fontsize=8)
     if basemap and geo:
         try:
             import contextily as cx

@@ -15,11 +15,12 @@ summarises a whole drive. It reads:
 The tool comes from my MSc dissertation at the University of Bath (2022).
 The full dissertation is in [`docs/report/`](docs/report/2022_MSc_dissertation_av_comfort.pdf).
 
-![nuScenes scene-0103 report](docs/img/nuscenes_0103_report.png)
+![nuScenes scene-0446 report](docs/img/nuscenes_0446_report.png)
 
-*nuScenes scene-0103 (Boston Seaport). Each sample is placed on the
-acceleration comfort regions and the route is coloured by comfort level. The
-two black clusters near −2.8 m/s² are firm braking; they rate E.*
+*nuScenes scene-0446, an S-bend. The route is coloured by comfort level: the
+straights are comfortable (green) and both bends drop to uncomfortable (red
+and black). Each dot's colour is its final level, which includes jerk, so some
+gentle-acceleration samples still rate poorly.*
 
 ## Install
 
