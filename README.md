@@ -105,15 +105,37 @@ Run `avcomfort model` to see the full parameter set.
 
 ## On-vehicle data acquisition unit
 
+![Data acquisition unit: printed case and CAD model with the IMU axes](docs/img/dau_case.jpg)
+
+The data acquisition unit (DAU) is a Raspberry Pi 4B with an OzzMaker
+BerryGPS-IMU v4 (LSM6DSL accelerometer, u-blox CAM-M8 GPS, 10 Hz), an
+external GPS antenna and a USB camera, in a 3-D printed case. I used it on a
+Honda Civic around Bath (UK).
+
+[`daq/berry_logger.py`](daq/berry_logger.py) is the logger. It assesses
+comfort live, reads GPS in a background thread, and writes one CSV per drive
+that `avcomfort csv` can re-assess. Run it with `--simulate` to try it
+without hardware. The setup steps are in the file header.
+
+### Case
+
+The case is in [`hardware/`](hardware/), as STL files for printing and STEP
+files for editing. It has three parts, printed in PLA and joined with bolts
+and nuts:
+
+| Part | Size [mm] | Files |
+|---|---|---|
+| Base, with mounting holes | 99 × 129 × 20 | `case_base.stl`, `.stp` |
+| Side wall | 72 × 102 × 22 | `case_wall.stl`, `.stp` |
+| Top cover, with vents | 71 × 101 × 3 | `case_top.stl`, `.stp` |
+
+The case has openings for the GPS antenna and the camera cable, and a camera
+mount. Extra wall sections can be added for more height, and the base can be
+used on its own.
+
 ![Bath test drive](docs/img/bath_scene02_gg.png)
 
-The DAU was a Raspberry Pi 4B with an OzzMaker BerryGPS-IMU v4 (LSM6DSL
-accelerometer, u-blox CAM-M8 GPS, 10 Hz), an external GPS antenna, a USB
-camera and a 3-D printed case. I used it on a Honda Civic around Bath (UK).
-[`daq/berry_logger.py`](daq/berry_logger.py) is the cleaned-up logger. It
-assesses comfort live, reads GPS in a background thread, and writes one CSV
-per drive that `avcomfort csv` can re-assess. Run it with `--simulate` to try
-it without hardware. The setup steps are in the file header.
+*Acceleration classification for a short Bath test drive logged with the DAU.*
 
 ## Data
 
