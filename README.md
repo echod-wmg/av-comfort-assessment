@@ -1,6 +1,6 @@
 # avcomfort: occupant comfort assessment for autonomous vehicles
 
-[![tests](https://github.com/Chodowi2021/AV-comfort-assessment-tool-/actions/workflows/tests.yml/badge.svg)](https://github.com/Chodowi2021/AV-comfort-assessment-tool-/actions/workflows/tests.yml)
+[![tests](https://github.com/echod-wmg/av-comfort-assessment/actions/workflows/tests.yml/badge.svg)](https://github.com/echod-wmg/av-comfort-assessment/actions/workflows/tests.yml)
 
 `avcomfort` rates ride comfort from vehicle IMU data. It classifies every
 sample by **acceleration and jerk** into seven comfort levels (A* to F, after
@@ -13,9 +13,9 @@ summarises a whole drive. It reads:
 * any **CSV** with `time_s, acc_lat, acc_long`.
 
 The tool started as my MSc dissertation at the University of Bath (2022),
-*occupant comfort assessment of autonomous vehicles*. The original scripts are
-on the [`AssessTool-V1`](https://github.com/Chodowi2021/AV-comfort-assessment-tool-/tree/AssessTool-V1)
-branch. This version (v2) is a cleaned-up, tested package. It reproduces V1's
+*occupant comfort assessment of autonomous vehicles*. The original 2022
+scripts are referred to here as AssessTool-V1. This version (v2) is a
+cleaned-up, tested package. It reproduces V1's
 published outputs exactly, and fixes the issues listed under
 [Corrections](#corrections-to-v1).
 
@@ -28,8 +28,8 @@ two black clusters near −2.8 m/s² are firm braking; they rate E.*
 ## Install
 
 ```bash
-git clone https://github.com/Chodowi2021/AV-comfort-assessment-tool-.git
-cd AV-comfort-assessment-tool-
+git clone https://github.com/echod-wmg/av-comfort-assessment.git
+cd av-comfort-assessment
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"          # add ,maps for web-map backgrounds (contextily)
 ```
