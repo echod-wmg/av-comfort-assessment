@@ -14,7 +14,8 @@ summarises a whole drive. It reads:
 
 The tool started as my MSc dissertation at the University of Bath (2022),
 *occupant comfort assessment of autonomous vehicles*. The original 2022
-scripts are referred to here as AssessTool-V1. This version (v2) is a
+scripts are referred to here as AssessTool-V1. The full dissertation is in
+[`docs/report/`](docs/report/2022_MSc_dissertation_av_comfort.pdf). This version (v2) is a
 cleaned-up, tested package. It reproduces V1's
 published outputs exactly, and fixes the issues listed under
 [Corrections](#corrections-to-v1).
@@ -146,6 +147,14 @@ it without hardware. The setup steps are in the file header.
   literature. They have not been calibrated against occupant ratings.
 * The IMU must be aligned with the vehicle axes. The logger has axis and sign
   flags for the mounting, but no automatic alignment.
+
+## Dissertation
+
+*Design of the model for the real-time occupant's comfort assessment within
+the autonomous vehicle*, MSc dissertation, University of Bath, 2022:
+[PDF](docs/report/2022_MSc_dissertation_av_comfort.pdf). It covers the
+literature review, the DAU design, the comfort model and the original V1
+results. Some literature figures are reproduced from the cited sources.
 
 ## License
 
