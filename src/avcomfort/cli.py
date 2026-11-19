@@ -28,6 +28,11 @@ def main(argv=None) -> int:
     p = sub.add_parser("nuscenes", help="assess a nuScenes CAN bus scene")
     p.add_argument("--can-bus", type=Path, required=True, help="directory with scene-XXXX_ms_imu.json / _pose.json")
     p.add_argument("--scene", required=True, help="scene number or name, e.g. 61 or scene-0061")
+    p.add_argument(
+        "--location",
+        choices=["boston-seaport", "singapore-onenorth", "singapore-hollandvillage", "singapore-queenstown"],
+        help="nuScenes map of the scene; adds lon/lat so --basemap can draw the route on a map",
+    )
     _common(p)
 
     p = sub.add_parser("berry", help="assess a drive logged by the BerryGPS-IMU DAU")
@@ -49,7 +54,7 @@ def main(argv=None) -> int:
     from . import io
 
     if args.command == "nuscenes":
-        drive = io.load_nuscenes(args.can_bus, args.scene)
+        drive = io.load_nuscenes(args.can_bus, args.scene, location=args.location)
         name = io._scene_name(args.scene)
     elif args.command == "berry":
         drive = io.load_berry_scene(args.dir, args.scene)
@@ -81,7 +86,10 @@ def main(argv=None) -> int:
         from .plots import report_figure, route_map
 
         fig = report_figure(
-            result, model, title=f"{name} - mean score {summary['mean_score']} ({summary['overall_rating']})"
+            result,
+            model,
+            title=f"{name} - mean score {summary['mean_score']} ({summary['overall_rating']})",
+            basemap=args.basemap,
         )
         fig.savefig(out / f"{name}_report.png", dpi=120)
         if args.basemap and {"lon", "lat"} <= set(result.columns):

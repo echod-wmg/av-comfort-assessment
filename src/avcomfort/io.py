@@ -9,12 +9,21 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
 
 PathLike = Union[str, Path]
+
+# Latitude / longitude of each nuScenes map origin (from the nuScenes devkit).
+NUSCENES_MAP_ORIGINS = {
+    "boston-seaport": (42.336849169438615, -71.05785369873047),
+    "singapore-onenorth": (1.2882100868743724, 103.78475189208984),
+    "singapore-hollandvillage": (1.2993652317780957, 103.78217697143555),
+    "singapore-queenstown": (1.2782562240223188, 103.76741409301758),
+}
+_EARTH_RADIUS_M = 6378137.0
 
 
 def load_csv(path: PathLike) -> pd.DataFrame:
@@ -24,7 +33,7 @@ def load_csv(path: PathLike) -> pd.DataFrame:
     return df
 
 
-def load_nuscenes(can_bus_dir: PathLike, scene: Union[str, int]) -> pd.DataFrame:
+def load_nuscenes(can_bus_dir: PathLike, scene: Union[str, int], location: Optional[str] = None) -> pd.DataFrame:
     """Load one scene of the nuScenes CAN bus expansion.
 
     Uses ``scene-XXXX_ms_imu.json`` (100 Hz). ``linear_accel`` is in the
@@ -32,6 +41,10 @@ def load_nuscenes(can_bus_dir: PathLike, scene: Union[str, int]) -> pd.DataFrame
     is lateral. AssessTool-V1 had these two swapped. Positions and speed from
     ``scene-XXXX_pose.json`` (50 Hz) are interpolated onto the IMU
     timestamps, so every comfort sample has a location.
+
+    With ``location`` (a key of ``NUSCENES_MAP_ORIGINS``, e.g.
+    ``"singapore-queenstown"``) the local positions are also converted to
+    ``lon``/``lat``, so the route can be drawn on a web map.
     """
     can_bus_dir = Path(can_bus_dir)
     name = _scene_name(scene)
@@ -49,6 +62,10 @@ def load_nuscenes(can_bus_dir: PathLike, scene: Union[str, int]) -> pd.DataFrame
         df["x_m"] = np.interp(df["time_s"], tp, pos[:, 0])
         df["y_m"] = np.interp(df["time_s"], tp, pos[:, 1])
         df["speed_mps"] = np.interp(df["time_s"], tp, vel)
+        if location is not None:
+            lat0, lon0 = NUSCENES_MAP_ORIGINS[location]
+            df["lat"] = lat0 + np.degrees(df["y_m"] / _EARTH_RADIUS_M)
+            df["lon"] = lon0 + np.degrees(df["x_m"] / (_EARTH_RADIUS_M * np.cos(np.radians(lat0))))
     df.attrs["source"] = f"nuScenes CAN bus {name}"
     return df
 

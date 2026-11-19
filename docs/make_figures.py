@@ -21,31 +21,30 @@ from avcomfort.plots import gg_diagram, report_figure
 
 ROOT = Path(__file__).resolve().parents[1]
 IMG = ROOT / "docs" / "img"
-HERO = 446  # S-bend: comfortable on the straights, uncomfortable in the corners
+HERO = 916  # drawn on OpenStreetMap (needs contextily and internet access)
 SCENES = {
-    61: "Singapore One-North",
-    103: "Boston Seaport",
-    446: None,
-    916: "Singapore Queenstown",
+    61: ("Singapore One-North", "singapore-onenorth"),
+    103: ("Boston Seaport", "boston-seaport"),
+    916: ("Singapore Queenstown", "singapore-queenstown"),
 }
 
 
 def main(can_bus: Path) -> None:
     IMG.mkdir(parents=True, exist_ok=True)
     rows = []
-    for scene, place in SCENES.items():
-        result = assess(load_nuscenes(can_bus, scene))
+    for scene, (place, location) in SCENES.items():
+        result = assess(load_nuscenes(can_bus, scene, location=location))
         s = summarise(result)
         rows.append(
             {
-                "scene": f"scene-{scene:04d}" + (f" ({place})" if place else ""),
+                "scene": f"scene-{scene:04d} ({place})",
                 "mean score": s["mean_score"],
                 "rating": s["overall_rating"],
                 "time in C or worse [%]": round(sum(v for k, v in s["time_share_pct"].items() if k in "CDEF"), 1),
             }
         )
         if scene == HERO:
-            fig = report_figure(result, title=f"nuScenes scene-{scene:04d}")
+            fig = report_figure(result, title=f"nuScenes scene-{scene:04d} ({place})", basemap=True)
             fig.savefig(IMG / f"nuscenes_{scene:04d}_report.png", dpi=100)
             plt.close(fig)
     table = pd.DataFrame(rows)
