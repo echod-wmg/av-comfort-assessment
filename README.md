@@ -12,13 +12,8 @@ summarises a whole drive. It reads:
   (DAU), including real-time assessment on the vehicle,
 * any **CSV** with `time_s, acc_lat, acc_long`.
 
-The tool started as my MSc dissertation at the University of Bath (2022),
-*occupant comfort assessment of autonomous vehicles*. The original 2022
-scripts are referred to here as AssessTool-V1. The full dissertation is in
-[`docs/report/`](docs/report/2022_MSc_dissertation_av_comfort.pdf). This version (v2) is a
-cleaned-up, tested package. It reproduces V1's
-published outputs exactly, and fixes the issues listed under
-[Corrections](#corrections-to-v1).
+The tool comes from my MSc dissertation at the University of Bath (2022).
+The full dissertation is in [`docs/report/`](docs/report/2022_MSc_dissertation_av_comfort.pdf).
 
 ![nuScenes scene-0103 report](docs/img/nuscenes_0103_report.png)
 
@@ -49,7 +44,6 @@ avcomfort csv tests/data/bath_scene02.csv
 
 # options
 avcomfort csv drive.csv --jerk-window 0.5     # jerk smoothing window [s]
-avcomfort csv drive.csv --legacy              # exact AssessTool-V1 behaviour
 avcomfort model > my_model.json               # dump thresholds, edit, then --model my_model.json
 ```
 
@@ -63,6 +57,24 @@ drive = load_nuscenes("~/data/nuscenes/can_bus", 103)
 result = assess(drive)              # adds jerk, level, rating, score per sample
 summarise(result)                   # {'mean_score': 68.49, 'overall_rating': 'C', 'time_share_pct': {...}, ...}
 ```
+
+## How it works
+
+1. **Load.** Each source becomes one table of time, lateral and longitudinal
+   acceleration, plus position and speed where available. For nuScenes, IMU
+   `x` is longitudinal and `y` is lateral, and the 50 Hz pose is interpolated
+   onto the 100 Hz IMU timestamps.
+2. **Jerk.** Acceleration is smoothed with a 1 s moving average, then
+   differentiated. Smoothing stops sensor noise from dominating the jerk.
+   Change the window with `--jerk-window`.
+3. **Classify.** Each sample gets a comfort level from its acceleration and
+   jerk (see below).
+4. **Score.** Each sample gets a 0–100 score. The drive's rating comes from
+   its time-weighted mean score.
+5. **Report.** A per-sample CSV, a JSON summary and a report figure: the
+   acceleration plot on the comfort regions, the route coloured by comfort
+   level (or acceleration over time when there is no position), and the
+   score over time.
 
 ## Comfort model
 
@@ -89,33 +101,6 @@ The level-specific `points` and `divisor` (with a separate braking divisor)
 are in `avcomfort/model.py`. The drive's overall rating comes from its
 time-weighted mean score: >90 A*, >80 A, >75 B, >65 C, >60 D, >35 E, else F.
 Run `avcomfort model` to see the full parameter set.
-
-## Corrections to V1
-
-| Issue in AssessTool-V1 | Evidence | v2 |
-|---|---|---|
-| **nuScenes axes swapped.** IMU `x` (forward) was classified against the *lateral* limits and `y` (left) against the *longitudinal* ones. The plotting scripts used the right axes, so the two disagreed. | Over scenes 0061, 0103 and 0916, IMU `x` correlates 0.95–0.99 with d(speed)/dt and IMU `y` correlates 0.94–0.98 with yaw-rate × speed. | `load_nuscenes` maps `x` to longitudinal and `y` to lateral. |
-| **Jerk never used for nuScenes.** It was hard-coded to 0. Raw differentiation (as in the DAU script) gives a median of about 5–7 m/s³ from sensor noise, above every jerk threshold. | Raw 100 Hz IMU data | Jerk is the derivative of a 1 s moving average (median about 0.2–0.3 m/s³). Adjust with `--jerk-window`. |
-| GPS (50 Hz) and IMU (100 Hz) samples weren't aligned, so comfort couldn't be mapped to position. | Comment in `AV_nuscenes.py` | Pose is interpolated onto the IMU timestamps. |
-| Hard-coded Windows paths, output files opened in append mode (re-runs duplicated rows), thresholds copy-pasted across 4 scripts | | One package, CLI, JSON-configurable model, tests |
-| Dissertation Table 3 lists lateral C/D limits of 3.7 / 4.3 m/s²; the code used 3.6 / 4.2. The text says ±2 g accelerometer range; the driver configured ±8 g (0.244 mg/LSB). | `IMU.py` sets `CTRL1_XL = 0b10011111` | Code values kept, so published results reproduce. Both are documented here. |
-
-Effect on the three nuScenes scenes from the dissertation (`docs/make_figures.py`):
-
-| Scene | V1 (2022) | V1 + axis fix | v2 default (axis fix + jerk) |
-|---|---|---|---|
-| scene-0061 Singapore One-North | 77.5 (B) | 77.5 (B) | 71.3 (C) |
-| scene-0103 Boston Seaport | 78.0 (B) | 76.2 (B) | 68.5 (C) |
-| scene-0916 Singapore Queenstown | 72.5 (C) | 74.7 (C) | 65.4 (C) |
-
-The axis fix changes the per-sample classification considerably even where
-the mean barely moves. In scene-0103, samples rated E (uncomfortable) go from
-5 to 212 because hard braking is now judged against the braking limits. Adding
-jerk lowers the mean scores by a further 6–9 points.
-
-`tests/test_assess.py::test_reproduces_assesstool_v1_exactly` checks that
-`--legacy` reproduces V1's per-sample levels and scores bit-for-bit, using the
-Bath scene-02 drive in `tests/data/`.
 
 ## On-vehicle data acquisition unit
 
@@ -153,8 +138,7 @@ it without hardware. The setup steps are in the file header.
 *Design of the model for the real-time occupant's comfort assessment within
 the autonomous vehicle*, MSc dissertation, University of Bath, 2022:
 [PDF](docs/report/2022_MSc_dissertation_av_comfort.pdf). It covers the
-literature review, the DAU design, the comfort model and the original V1
-results. Some literature figures are reproduced from the cited sources.
+literature review, the DAU design, the comfort model and the results. Some literature figures are reproduced from the cited sources.
 
 ## License
 
